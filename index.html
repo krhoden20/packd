@@ -450,7 +450,7 @@ function renderOutfits(){
   }).join('');
   osDay.textContent=day;osNight.textContent=night;osSwim.textContent=swim;osPacked.textContent=packed+'/8';
 }
-function outfitInput(date,key,label,val=''){return`<div class="outfit-field"><label>${label}</label><input value="${esc(val)}" oninput="saveOutfitField('${date}','${key}',this.value)"></div>`}
+function outfitInput(date,key,label,val=''){return`<div class="outfit-field"><label>${label}</label><input value="${esc(val)}" onblur="saveOutfitField('${date}','${key}',this.value)"></div>`}
 let outfitTimer;
 function saveOutfitField(date,key,value){const p=activePerson();p.outfits=p.outfits||{};p.outfits[date]=p.outfits[date]||{};p.outfits[date][key]=value;clearTimeout(outfitTimer);outfitTimer=setTimeout(async()=>{await persist();renderOutfits()},650)}
 async function toggleOutfitPacked(date){const p=activePerson();p.outfits=p.outfits||{};p.outfits[date]=p.outfits[date]||{};p.outfits[date].packed=!p.outfits[date].packed;await persist();renderOutfits()}
