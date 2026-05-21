@@ -33,7 +33,7 @@ html{background:radial-gradient(circle at top left,#fffaf2 0,#f5f0e8 38%,#efe5d5
 <div class="toast" id="toast"></div>
 <script>
 const SUPABASE_URL='https://smxnwbxwjhnshkjylpoq.supabase.co';
-const SUPABASE_ANON_KEY='PASTE_YOUR_ANON_KEY_HERE';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteG53Ynh3amhuc2hranlscG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEyNzIsImV4cCI6MjA5NDk0NzI3Mn0.mtVdI1klPPiiJ_lVTTWR7KhKI5HuDIYlrztBhrINUz0';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const FAMILY_META={rhoden:{c:'#6b8faf',bg:'#edf2f7',mid:'rgba(107,143,175,.20)',label:'Rhoden'},douglas:{c:'#8b7355',bg:'#f5ede2',mid:'rgba(139,115,85,.20)',label:'Douglas'},palmer:{c:'#6b8c72',bg:'#edf3ee',mid:'rgba(107,140,114,.20)',label:'Palmer'}};
 const TRIP_DAYS=[{id:'2026-05-22',dow:'Fri',label:'May 22',kind:'travel day',note:'Lake City → Naples'},{id:'2026-05-23',dow:'Sat',label:'May 23',kind:'Naples',note:'Naples day'},{id:'2026-05-24',dow:'Sun',label:'May 24',kind:'travel / check-in',note:'Naples → Cape Coral · 5pm check-in'},{id:'2026-05-25',dow:'Mon',label:'May 25',kind:'Cape Coral',note:'pool / house day'},{id:'2026-05-26',dow:'Tue',label:'May 26',kind:'Cape Coral',note:'vacation day'},{id:'2026-05-27',dow:'Wed',label:'May 27',kind:'Cape Coral',note:'vacation day'},{id:'2026-05-28',dow:'Thu',label:'May 28',kind:'Cape Coral',note:'final full day'},{id:'2026-05-29',dow:'Fri',label:'May 29',kind:'travel home',note:'pack up / head home'}];
