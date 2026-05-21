@@ -322,11 +322,40 @@ async function init(){
     ];
     await persist();
   }
-  supabaseClient.channel('packd_state_changes').on('postgres_changes',{event:'*',schema:'public',table:'packd_state'},async()=>{
-    syncing=true;await load();syncing=false;
-    if(activePID&&!activePerson()){activePID=null;showScreen('home')}
-    activePID?renderList():renderHome();
-  }).subscribe();
+  let isEditingText = false;
+
+document.addEventListener('focusin', e => {
+  if (e.target.matches('input, textarea, [contenteditable="true"]')) {
+    isEditingText = true;
+  }
+});
+
+document.addEventListener('focusout', e => {
+  if (e.target.matches('input, textarea, [contenteditable="true"]')) {
+    setTimeout(() => {
+      isEditingText = false;
+    }, 300);
+  }
+});
+
+supabaseClient
+  .channel('packd_state_changes')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'packd_state' },
+    async () => {
+      if (isEditingText) return;
+
+      await load();
+
+      if (activePID) {
+        renderListScreen();
+      } else {
+        renderHome();
+      }
+    }
+  )
+  .subscribe();
   renderHome();
   setInterval(updateTripDate,60000);
 }
