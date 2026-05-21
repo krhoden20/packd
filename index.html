@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>packd</title>
@@ -867,6 +869,16 @@ input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:n
 <div class="toast" id="toast"></div>
 
 <script>
+  
+const SUPABASE_URL = 'https://smxnwbxwjhnshkjylpoq.supabase.co'
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteG53Ynh3amhuc2hranlscG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEyNzIsImV4cCI6MjA5NDk0NzI3Mn0.mtVdI1klPPiiJ_lVTTWR7KhKI5HuDIYlrztBhrINUz0'
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
+  
 // ══════════════════════════════
 // STATE
 // ══════════════════════════════
@@ -883,18 +895,45 @@ let S = {
   persons:[],
 };
 
-function load(){
-  try{const d=localStorage.getItem('packd4');if(d)S={...S,...JSON.parse(d)}}catch(e){}
+async function load(){
+  const { data, error } = await supabaseClient
+    .from('packd_state')
+    .select('data')
+    .eq('id','main')
+    .single();
+
+  if(data?.data){
+    S = {...S, ...data.data};
+  }
 }
+  
 function persist(){
-  try{localStorage.setItem('packd4',JSON.stringify(S))}catch(e){}
+ supabaseClient
+  .from('packd_state')
+  .upsert({
+    id: 'main',
+    data: S,
+    updated_at: new Date().toISOString()
+  });
+  
 }
 load();
 
 // active person
 let activePID = null;
 function activePerson(){return S.persons.find(p=>p.id===activePID)}
-
+  
+supabaseClient
+  .channel('packd_state_changes')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'packd_state' },
+    async () => {
+      await load();
+      renderHome();
+    }
+  )
+  .subscribe();
 // ══════════════════════════════
 // SCREEN ROUTING
 // ══════════════════════════════
