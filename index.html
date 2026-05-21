@@ -151,6 +151,37 @@ input,select,textarea{border:0;outline:0;background:transparent;color:var(--ink)
       <div class="right-stack">
         <div>
           <p class="section-label">select your profile</p>
+          <!-- HOME QUICK ADD -->
+<div class="sec-qa" style="margin-bottom:22px">
+  <input 
+    class="sec-qa-in" 
+    id="homeQuickAddInput" 
+    placeholder="Quick add item from home…" 
+    onkeydown="if(event.key==='Enter')homeQuickAdd()"
+  >
+
+  <select class="fsel" id="homeQuickAddPerson" style="max-width:150px;padding:10px 12px">
+  </select>
+
+  <button class="sec-qa-btn" style="background:var(--t1)" onclick="homeQuickAdd()">
+    Add
+  </button>
+</div>
+          <div class="sec-qa" style="margin-bottom:22px">
+  <input 
+    class="sec-qa-in" 
+    id="homeQuickAddInput" 
+    placeholder="Quick add item from home…" 
+    onkeydown="if(event.key==='Enter')homeQuickAdd()"
+  >
+
+  <select class="fsel" id="homeQuickAddPerson" style="max-width:150px;padding:10px 12px">
+  </select>
+
+  <button class="sec-qa-btn" style="background:var(--t1)" onclick="homeQuickAdd()">
+    Add
+  </button>
+</div>
           <div class="profiles-grid" id="profilesGrid"></div>
         </div>
         <div>
@@ -367,6 +398,7 @@ function goHome(){activePID=null;showScreen('home');renderHome()}
 function cssVars(meta){return`--accent:${meta.c};--accent-bg:${meta.bg};--accent-mid:${meta.mid}`}
 
 function renderHome(){
+  renderHomeQuickAddPeople();
   updateTripDate();renderStats();renderProfiles();renderShared();
 }
 function updateTripDate(){
@@ -432,7 +464,83 @@ function itemHTML(i){
 }
 function renderItems(){const p=activePerson(),items=p.items||[];itemsList.innerHTML=items.length?items.map(itemHTML).join(''):'<div class="empty">nothing here yet</div>'}
 function renderMyShared(){const p=activePerson(),items=(p.items||[]).filter(i=>i.shared);mySharedList.innerHTML=items.length?items.map(itemHTML).join(''):'<div class="empty">mark items with ◎ to share them with the group</div>'}
-function quickAddItem(){const name=quickInput.value.trim();if(!name)return;addItem({name,qty:1});quickInput.value='';quickInput.focus()}
+function renderHomeQuickAddPeople(){
+  const sel = document.getElementById('homeQuickAddPerson');
+  if(!sel) return;
+
+  sel.innerHTML = S.persons.map(p =>
+    `<option value="${p.id}">${esc(p.name)}</option>`
+  ).join('');
+}
+
+async function homeQuickAdd(){
+  const inp = document.getElementById('homeQuickAddInput');
+  const sel = document.getElementById('homeQuickAddPerson');
+
+  if(!inp || !sel) return;
+
+  const name = inp.value.trim();
+  const pid = sel.value;
+
+  if(!name || !pid) return;
+
+  const originalActivePID = activePID;
+  activePID = pid;
+
+  await addItem({
+    name,
+    qty: 1,
+    cat: '',
+    pri: '',
+    timing: '',
+    note: '',
+    shared: false
+  });
+
+  activePID = originalActivePID;
+
+  inp.value = '';
+  renderHome();
+}
+  function renderHomeQuickAddPeople(){
+  const sel = document.getElementById('homeQuickAddPerson');
+  if(!sel) return;
+
+  sel.innerHTML = S.persons.map(p =>
+    `<option value="${p.id}">${esc(p.name)}</option>`
+  ).join('');
+}
+
+async function homeQuickAdd(){
+  const inp = document.getElementById('homeQuickAddInput');
+  const sel = document.getElementById('homeQuickAddPerson');
+
+  if(!inp || !sel) return;
+
+  const name = inp.value.trim();
+  const pid = sel.value;
+
+  if(!name || !pid) return;
+
+  const originalActivePID = activePID;
+  activePID = pid;
+
+  await addItem({
+    name,
+    qty: 1,
+    cat: '',
+    pri: '',
+    timing: '',
+    note: '',
+    shared: false
+  });
+
+  activePID = originalActivePID;
+
+  inp.value = '';
+  renderHome();
+}
+  function quickAddItem(){const name=quickInput.value.trim();if(!name)return;addItem({name,qty:1});quickInput.value='';quickInput.focus()}
 async function addItem(d){const p=activePerson();p.items=p.items||[];p.items.push({id:uid(),name:d.name,qty:d.qty||1,cat:d.cat||'',pri:d.pri||'',timing:d.timing||'',note:d.note||'',shared:!!d.shared,done:false});await persist();renderList();toast('added · '+d.name)}
 async function toggleItem(id){const p=activePerson(),i=(p.items||[]).find(x=>x.id===id);if(!i)return;i.done=!i.done;await persist();renderList()}
 async function shareItem(id){const p=activePerson(),i=(p.items||[]).find(x=>x.id===id);if(!i)return;i.shared=!i.shared;await persist();renderList();toast(i.shared?'shared with group':'removed from group')}
