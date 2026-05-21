@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>packd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f5f0e8;--bg2:#efe9dd;--bg3:#e8e1d4;--surface:#faf7f2;--surface2:#f2ece2;
+  --t1:#2c2820;--t2:#6b6257;--t3:#9e9084;--t4:#bdb3a8;--t5:#d4cdc5;
+  --ln:rgba(44,40,32,.08);--ln2:rgba(44,40,32,.13);--ln3:rgba(44,40,32,.06);
+  --rh:#6b8faf;--rh-bg:#edf2f7;--rh-mid:rgba(107,143,175,.2);
+  --dg:#8b7355;--dg-bg:#f5ede2;--dg-mid:rgba(139,115,85,.2);
+  --pl:#6b8c72;--pl-bg:#edf3ee;--pl-mid:rgba(107,140,114,.2);
+  --sh:#b07c5b;--sh-bg:#f7ede5;--sh-mid:rgba(176,124,91,.2);
+  --r:16px;--r-sm:10px;--r-xs:6px;
+  --shadow-sm:0 1px 4px rgba(44,40,32,.07),0 4px 16px rgba(44,40,32,.05);
+  --shadow:0 2px 8px rgba(44,40,32,.08),0 8px 32px rgba(44,40,32,.06);
+  --shadow-lg:0 4px 16px rgba(44,40,32,.1),0 16px 48px rgba(44,40,32,.08);
+}
+html{background:var(--bg);color:var(--t1);font-family:'Jost',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{min-height:100dvh;overflow-x:hidden;padding-bottom:130px}
+button{font-family:'Jost',sans-serif;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:none;border:none;outline:none}
+::selection{background:rgba(107,143,175,.2)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100dvh}
+.screen.active{display:block}
+
+/* ════════════════════════════
+   HOME SCREEN (profile picker)
+════════════════════════════ */
+.home-wrap{max-width:420px;margin:0 auto;padding:0 20px}
+.home-hero{padding:60px 0 32px;text-align:center}
+.home-wordmark{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;letter-spacing:.2em;color:var(--t1);line-height:1;margin-bottom:6px}
+.home-sub{font-size:11px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:var(--t3)}
+.home-section-label{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.home-date-row{margin-bottom:20px}
+.itin-card{
+  background:var(--surface);border:1px solid var(--ln);border-radius:var(--r);
+  box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:4px;
+}
+.itin-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px 10px;border-bottom:1px solid var(--ln3);
+}
+.itin-trip-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--t1);letter-spacing:.02em}
+.itin-countdown{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;color:var(--t2);
+  background:var(--bg3);padding:4px 10px;border-radius:100px;
+  border:1px solid var(--ln2);
+}
+.date-pip{width:6px;height:6px;border-radius:50%;background:var(--pl);animation:breathe 3s ease-in-out infinite;flex-shrink:0}
+.itin-leg{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 16px;border-bottom:1px solid var(--ln3);
+}
+.itin-leg:last-child{border-bottom:none}
+.itin-leg-day{
+  flex-shrink:0;text-align:center;width:36px;
+}
+.ild-dow{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)}
+.ild-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--t1);line-height:1}
+.itin-leg-body{flex:1;min-width:0}
+.ilb-route{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:-.01em;margin-bottom:3px}
+.ilb-addr{font-size:11px;color:var(--t3);line-height:1.4;margin-bottom:2px}
+.ilb-note{font-size:11px;color:var(--t2);font-style:italic}
+.itin-dot-col{display:flex;flex-direction:column;align-items:center;gap:0;padding-top:4px;flex-shrink:0;width:14px}
+.itin-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--t5);flex-shrink:0}
+.itin-dot.filled{background:var(--t3);border-color:var(--t3)}
+.itin-dot-line{width:1.5px;flex:1;min-height:16px;background:var(--ln2)}
+.home-date-btn{display:none}
+@keyframes breathe{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+
+/* PROFILE GRID */
+.profiles-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.profile-card{
+  background:var(--surface);border:1px solid var(--ln);border-radius:var(--r);
+  padding:20px 16px 18px;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .15s;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;
+}
+.profile-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.profile-card:active{transform:scale(.97)}
+.profile-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--pacc,var(--t5));opacity:.7;
+}
+.p-avatar{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;
+  background:var(--pacc-bg,var(--bg3));color:var(--pacc,var(--t2));
+  border:1.5px solid var(--pacc-mid,var(--ln2));
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.p-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.p-name{font-size:14px;font-weight:600;color:var(--t1);letter-spacing:-.01em}
+.p-family{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.p-count{font-size:10px;color:var(--t4);margin-top:2px}
+.p-lock{position:absolute;top:10px;right:10px;font-size:10px;color:var(--t4)}
+.p-shared-badge{
+  position:absolute;bottom:8px;right:8px;
+  font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--sh-bg);color:var(--sh);border:1px solid var(--sh-mid);
+  padding:2px 6px;border-radius:100px;
+}
+
+/* ADD PERSON CARD */
+.profile-card.add-card{
+  border-style:dashed;border-color:var(--ln2);
+  background:transparent;box-shadow:none;
+  color:var(--t4);
+}
+.profile-card.add-card:hover{background:var(--surface);box-shadow:var(--shadow-sm)}
+.add-card-icon{font-size:24px;color:var(--t5)}
+.add-card-label{font-size:12px;font-weight:500;color:var(--t3)}
+
+/* TRIP OVERVIEW STRIP */
+.trip-strip{
+  background:var(--surface);border:1px solid var(--ln);border-radius:var(--r);
+  padding:16px 18px;margin-bottom:28px;box-shadow:var(--shadow-sm);
+}
+.ts-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ts-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--t1)}
+.ts-pct{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--t1)}
+.ts-bar{height:2px;background:var(--bg3);border-radius:100px;overflow:hidden}
+.ts-fill{height:100%;background:linear-gradient(90deg,var(--rh),var(--pl));border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* SHARED STREAM */
+.shared-stream{margin-bottom:28px}
+.stream-card{
+  background:var(--surface);border:1px solid var(--ln);border-radius:var(--r);
+  overflow:hidden;box-shadow:var(--shadow-sm);
+}
+.stream-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 16px;border-bottom:1px solid var(--ln3);
+}
+.stream-item:last-child{border-bottom:none}
+.si-thumb{
+  width:40px;height:40px;border-radius:8px;
+  background:var(--bg3);flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--t4);
+}
+.si-thumb img{width:100%;height:100%;object-fit:cover}
+.si-body{flex:1;min-width:0}
+.si-name{font-size:13px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-who{font-size:11px;color:var(--t3);margin-top:1px}
+.si-packed{
+  width:22px;height:22px;border-radius:50%;border:1.5px solid var(--t5);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  margin-top:2px;cursor:pointer;transition:all .2s cubic-bezier(.34,1.4,.64,1);
+  background:transparent;
+}
+.si-packed.done{background:var(--pl);border-color:transparent;box-shadow:0 0 0 3px var(--pl-mid)}
+.si-chk{opacity:0;transform:scale(.4);transition:all .2s cubic-bezier(.34,1.4,.64,1)}
+.si-packed.done .si-chk{opacity:1;transform:scale(1)}
+
+/* ════════════════════════════
+   PIN SCREEN
+════════════════════════════ */
+.pin-wrap{max-width:360px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh}
+.pin-avatar{
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;
+  background:var(--bg3);margin-bottom:16px;
+  border:2px solid var(--ln2);overflow:hidden;
+  position:relative;
+}
+.pin-avatar img{width:100%;height:100%;object-fit:cover}
+.pin-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.06em;margin-bottom:6px;color:var(--t1)}
+.pin-label{font-size:11px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:36px}
+.pin-dots{display:flex;gap:14px;margin-bottom:32px}
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--t4);background:transparent;
+  transition:all .2s cubic-bezier(.34,1.4,.64,1);
+}
+.pin-dot.filled{background:var(--pacc,var(--t2));border-color:var(--pacc,var(--t2));transform:scale(1.1)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:280px;margin-bottom:20px}
+.pin-key{
+  aspect-ratio:1;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--ln2);
+  font-size:20px;font-weight:400;color:var(--t1);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);transition:all .1s;
+  font-family:'Cormorant Garamond',serif;letter-spacing:.05em;
+}
+.pin-key:active,.pin-key.pressed{background:var(--bg3);transform:scale(.93);box-shadow:none}
+.pin-key.wide{grid-column:span 1}
+.pin-err{color:#c07070;font-size:12px;font-weight:500;letter-spacing:.06em;text-align:center;height:18px;margin-bottom:8px;transition:opacity .2s}
+.pin-back-btn{font-size:12px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;padding:10px;margin-top:4px;transition:color .15s}
+.pin-back-btn:hover{color:var(--t1)}
+
+/* ════════════════════════════
+   SETUP SCREEN
+════════════════════════════ */
+.setup-wrap{max-width:420px;margin:0 auto;padding:0 22px}
+.setup-hero{padding:52px 0 28px;text-align:center}
+.setup-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:.08em;color:var(--t1);margin-bottom:6px}
+.setup-sub{font-size:12px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
+.setup-avatar-row{display:flex;justify-content:center;margin-bottom:28px}
+.setup-avatar{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--bg3);border:2px dashed var(--ln2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;overflow:hidden;position:relative;
+  transition:border-color .2s,background .2s;
+  font-size:24px;color:var(--t4);
+}
+.setup-avatar:hover{background:var(--bg2);border-color:var(--t4)}
+.setup-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.setup-avatar-hint{font-size:9px;color:var(--t4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.setup-field{margin-bottom:16px}
+.setup-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:7px;display:block}
+.setup-input,.setup-select{
+  width:100%;background:var(--surface);border:1px solid var(--ln2);
+  border-radius:var(--r-sm);padding:13px 15px;font-size:14px;color:var(--t1);
+  transition:border-color .2s;
+}
+.setup-input:focus,.setup-select:focus{border-color:var(--t3)}
+.setup-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239e9084' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.setup-select option{background:#f5f0e8;color:#2c2820}
+.pin-setup-row{display:flex;gap:10px;margin-bottom:24px}
+.pin-setup-dot{
+  flex:1;aspect-ratio:1;max-height:52px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--ln2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--t4);cursor:pointer;
+  transition:all .15s;
+}
+.pin-setup-dot:hover{background:var(--bg3)}
+.pin-setup-dot.set{background:var(--bg3);border-color:var(--ln2);font-size:16px;color:var(--t2)}
+.setup-pin-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:block}
+.setup-pin-hint{font-size:11px;color:var(--t4);font-style:italic;margin-bottom:16px}
+.setup-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px}
+.snk{
+  padding:14px 8px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--ln);
+  font-size:18px;font-weight:400;color:var(--t1);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .1s;font-family:'Cormorant Garamond',serif;
+}
+.snk:active{background:var(--bg3);transform:scale(.93)}
+.setup-btn{
+  width:100%;padding:16px;border-radius:100px;
+  background:var(--t1);color:var(--bg);
+  font-size:14px;font-weight:600;letter-spacing:.06em;
+  box-shadow:0 4px 16px rgba(44,40,32,.2);
+  transition:all .15s;margin-bottom:12px;
+}
+.setup-btn:hover{background:var(--t2)}
+.setup-btn:active{transform:scale(.97)}
+.setup-skip{font-size:12px;color:var(--t3);text-decoration:underline;text-underline-offset:3px;cursor:pointer;display:block;text-align:center;padding:8px}
+
+/* ════════════════════════════
+   PERSONAL LIST SCREEN
+════════════════════════════ */
+.list-wrap{max-width:420px;margin:0 auto;padding:0 18px}
+.list-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:52px 0 20px;
+}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;color:var(--t3);letter-spacing:.04em;
+  transition:color .15s;padding:6px 0;
+}
+.back-btn:hover{color:var(--t1)}
+.back-arrow{font-size:16px;line-height:1}
+.list-header{text-align:center;margin-bottom:24px}
+.list-avatar{
+  width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;
+  margin:0 auto 12px;border:2px solid var(--ln2);overflow:hidden;
+  background:var(--bg3);
+}
+.list-avatar img{width:100%;height:100%;object-fit:cover}
+.list-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.06em;color:var(--t1);margin-bottom:2px}
+.list-family{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--t3)}
+.list-progress-row{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.lp-ring{position:relative;flex-shrink:0}
+.lp-ring svg{transform:rotate(-90deg)}
+.lp-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:var(--t3)}
+.lp-bar-wrap{flex:1}
+.lp-label{font-size:11px;color:var(--t3);margin-bottom:5px}
+.lp-bar{height:3px;background:var(--bg3);border-radius:100px;overflow:hidden}
+.lp-fill{height:100%;border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* section label */
+.list-section-lbl{
+  font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--t3);margin:24px 0 10px;display:flex;align-items:center;gap:10px;
+}
+.list-section-lbl::after{content:'';flex:1;height:1px;background:var(--ln2)}
+
+/* items card same as group */
+.items-card{
+  background:var(--surface);border:1px solid var(--ln);border-radius:var(--r);
+  box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;
+}
+.cf-row{display:flex;gap:5px;padding:12px 14px 10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--ln3)}
+.cf-row::-webkit-scrollbar{display:none}
+.cf-row.hide{display:none}
+.cf-chip{flex-shrink:0;padding:4px 11px;border-radius:100px;border:1px solid var(--ln2);background:transparent;font-size:11px;font-weight:500;color:var(--t3);transition:all .12s;letter-spacing:.03em}
+.cf-chip:hover{color:var(--t2)}
+.cf-chip.on{background:var(--bg3);color:var(--t1)}
+.item-row{
+  display:flex;align-items:center;padding:0 14px;
+  border-bottom:1px solid var(--ln3);transition:background .15s;min-height:52px;
+}
+.item-row:last-child{border-bottom:none}
+.item-row:hover{background:rgba(44,40,32,.02)}
+.item-row.done{opacity:.4}
+.item-row.done .iname{text-decoration:line-through;color:var(--t3)}
+.i-check{width:38px;height:52px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;margin-left:-4px}
+.i-box{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--t5);display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.34,1.4,.64,1);background:transparent}
+.item-row.done .i-box{background:var(--acc,var(--pl));border-color:transparent;box-shadow:0 0 0 3px var(--acc-mid,var(--pl-mid))}
+.i-check-svg{opacity:0;transform:scale(.4) rotate(10deg);transition:all .22s cubic-bezier(.34,1.4,.64,1)}
+.item-row.done .i-check-svg{opacity:1;transform:scale(1) rotate(0)}
+.i-body{flex:1;min-width:0;padding:12px 6px 12px 2px;cursor:pointer}
+.iname{font-size:14px;font-weight:400;color:var(--t1);letter-spacing:-.005em;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.imeta{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;margin-top:4px}
+.itag{font-size:10px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:100px;flex-shrink:0;white-space:nowrap}
+.itag.cat{background:var(--bg3);color:var(--t3);border:1px solid var(--ln)}
+.itag.pri-hi{background:rgba(176,91,91,.08);color:#9a5a5a;border:1px solid rgba(176,91,91,.15)}
+.itag.pri-md{background:rgba(176,138,91,.08);color:#9a7a45;border:1px solid rgba(176,138,91,.15)}
+.itag.tm{background:var(--rh-bg);color:var(--rh);border:1px solid var(--rh-mid)}
+.itag.sh-tag{background:var(--sh-bg);color:var(--sh);border:1px solid var(--sh-mid)}
+.itag.qty{background:var(--bg3);color:var(--t3);border:1px solid var(--ln)}
+.itag.nt{background:var(--bg3);color:var(--t3);border:1px solid var(--ln);font-style:italic;font-weight:400;letter-spacing:0}
+.i-thumb{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--bg3);flex-shrink:0;overflow:hidden;margin-right:4px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--t4);
+  cursor:pointer;
+}
+.i-thumb img{width:100%;height:100%;object-fit:cover}
+.i-right{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.i-btn{width:30px;height:30px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--t4);transition:all .12s}
+.i-btn:hover{background:var(--bg3);color:var(--t2)}
+.i-btn.del:hover{background:rgba(176,91,91,.08);color:#c07070}
+.i-btn.share-on{color:var(--sh)}
+.empty{padding:32px 20px;text-align:center}
+.empty-glyph{font-size:28px;margin-bottom:8px;opacity:.25}
+.empty-txt{font-size:12px;color:var(--t4);font-weight:400;font-style:italic}
+
+/* QUICK ADD */
+.sec-qa{
+  display:flex;gap:7px;align-items:center;
+  background:var(--surface);border:1px solid var(--ln);
+  border-radius:var(--r-sm);padding:3px 3px 3px 14px;
+  box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;
+  margin-bottom:4px;
+}
+.sec-qa:focus-within{border-color:var(--ln2);box-shadow:var(--shadow)}
+.sec-qa-in{flex:1;font-size:13px;font-weight:400;color:var(--t1);padding:10px 0;background:transparent}
+.sec-qa-in::placeholder{color:var(--t4);font-style:italic}
+.sec-qa-btn{padding:9px 14px;border-radius:8px;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:opacity .15s,transform .1s;flex-shrink:0}
+.sec-qa-btn:hover{opacity:.85}
+.sec-qa-btn:active{transform:scale(.95)}
+
+/* BOTTOM BAR */
+.bot{
+  position:fixed;bottom:0;left:0;right:0;z-index:60;
+  display:flex;justify-content:center;
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(to top,var(--bg) 65%,transparent);
+  pointer-events:none;
+}
+.bot.active{pointer-events:auto}
+.bot-inner{display:flex;gap:8px;align-items:center;width:100%;max-width:420px}
+.bot-field{
+  flex:1;display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--ln2);
+  border-radius:100px;padding:13px 18px;
+  box-shadow:var(--shadow);transition:box-shadow .2s;
+}
+.bot-field:focus-within{box-shadow:var(--shadow-lg)}
+.bot-ico{font-size:15px;color:var(--t4);flex-shrink:0}
+.bot-in{flex:1;font-size:14px;font-weight:400;color:var(--t1);background:transparent}
+.bot-in::placeholder{color:var(--t4)}
+.bot-detail{
+  width:46px;height:46px;border-radius:50%;
+  background:var(--t1);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:300;flex-shrink:0;
+  box-shadow:var(--shadow);transition:all .15s;
+}
+.bot-detail:hover{background:var(--t2)}
+.bot-detail:active{transform:scale(.93)}
+
+/* ════════════════════════════
+   MODALS (shared)
+════════════════════════════ */
+.overlay{position:fixed;inset:0;z-index:80;background:rgba(44,40,32,.45);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.overlay.on{opacity:1;pointer-events:auto}
+.sheet{
+  background:var(--surface);border:1px solid var(--ln2);border-radius:24px 24px 0 0;
+  width:100%;max-width:420px;padding:0 22px calc(36px + env(safe-area-inset-bottom,0px));
+  transform:translateY(24px);transition:transform .32s cubic-bezier(.4,0,.2,1);
+  max-height:92dvh;overflow-y:auto;box-shadow:0 -8px 48px rgba(44,40,32,.12);
+}
+.overlay.on .sheet{transform:translateY(0)}
+.sheet-handle{width:34px;height:4px;border-radius:100px;background:var(--t5);margin:14px auto 22px}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;letter-spacing:.01em;color:var(--t1);margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.finput,.fsel{width:100%;background:var(--bg2);border:1px solid var(--ln2);border-radius:var(--r-sm);padding:12px 14px;font-size:14px;color:var(--t1);transition:border-color .2s,background .2s}
+.finput:focus,.fsel:focus{border-color:var(--t3);background:var(--surface)}
+.fsel{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239e9084' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.fsel option{background:#f5f0e8;color:#2c2820}
+.r2{display:flex;gap:10px}.r2 .field{flex:1}
+.mact{display:flex;gap:8px;margin-top:18px}
+.mcancel{flex:1;padding:13px;border-radius:100px;background:var(--bg2);border:1px solid var(--ln2);font-size:13px;font-weight:500;color:var(--t2);transition:all .15s}
+.mcancel:hover{border-color:var(--t3);color:var(--t1)}
+.msave{flex:2;padding:13px;border-radius:100px;background:var(--t1);color:var(--bg);font-size:13px;font-weight:600;letter-spacing:.04em;transition:all .15s;box-shadow:0 4px 16px rgba(44,40,32,.2)}
+.msave:hover{background:var(--t2)}
+.msave:active{transform:scale(.97)}
+
+/* photo upload in modal */
+.photo-upload-box{
+  width:100%;aspect-ratio:3/2;border-radius:var(--r-sm);
+  border:1.5px dashed var(--ln2);background:var(--bg2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;cursor:pointer;overflow:hidden;position:relative;
+  transition:border-color .2s,background .2s;
+}
+.photo-upload-box:hover{background:var(--bg3);border-color:var(--t4)}
+.photo-upload-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-upload-box .pu-icon{font-size:28px;color:var(--t4)}
+.photo-upload-box .pu-label{font-size:11px;color:var(--t3);letter-spacing:.06em}
+.photo-remove{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:rgba(44,40,32,.5);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+
+/* share toggle */
+.share-toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 14px;background:var(--sh-bg);border:1px solid var(--sh-mid);
+  border-radius:var(--r-sm);cursor:pointer;transition:all .15s;
+  margin-bottom:14px;
+}
+.share-toggle-row.off{background:var(--bg2);border-color:var(--ln2)}
+.sth-left{display:flex;align-items:center;gap:10px}
+.sth-icon{font-size:18px}
+.sth-label{font-size:13px;font-weight:500;color:var(--t1)}
+.sth-sub{font-size:11px;color:var(--t3)}
+.sth-toggle{
+  width:40px;height:24px;border-radius:100px;
+  background:var(--t5);position:relative;transition:background .2s;flex-shrink:0;
+}
+.sth-toggle.on{background:var(--sh)}
+.sth-knob{
+  position:absolute;top:3px;left:3px;width:18px;height:18px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);
+  transition:transform .2s cubic-bezier(.34,1.4,.64,1);
+}
+.sth-toggle.on .sth-knob{transform:translateX(16px)}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--t1);color:var(--bg);border-radius:100px;padding:10px 20px;font-size:12px;font-weight:500;letter-spacing:.04em;z-index:200;transition:transform .3s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;box-shadow:var(--shadow-lg)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* CONFETTI */
+.cf{position:fixed;width:7px;height:7px;border-radius:1px;z-index:190;pointer-events:none;animation:cff 2.8s ease-in forwards}
+@keyframes cff{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(540deg);opacity:0}}
+
+/* IMAGE LIGHTBOX */
+.lightbox{position:fixed;inset:0;z-index:300;background:rgba(44,40,32,.85);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.lightbox.on{opacity:1;pointer-events:auto}
+.lightbox img{max-width:90vw;max-height:80dvh;border-radius:var(--r);box-shadow:var(--shadow-lg)}
+.lightbox-close{position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+@media(max-width:380px){
+  .home-wordmark,.pin-name{font-size:38px}
+  .profiles-grid{gap:9px}
+  .list-wrap,.home-wrap,.setup-wrap{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SCREEN 1: HOME / PROFILE PICKER
+══════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="home-wrap">
+    <div class="home-hero">
+      <h1 class="home-wordmark">packd</h1>
+      <p class="home-sub">vacation · 2025</p>
+    </div>
+
+    <!-- itinerary card -->
+    <div class="home-date-row">
+      <div class="itin-card">
+        <div class="itin-header">
+          <span class="itin-trip-name">Naples &amp; Cape Coral ✦ 2025</span>
+          <span class="itin-countdown"><span class="date-pip"></span><span id="homeDateTxt">loading…</span></span>
+        </div>
+        <!-- Leg 1 -->
+        <div class="itin-leg">
+          <div class="itin-dot-col">
+            <div class="itin-dot filled"></div>
+            <div class="itin-dot-line"></div>
+          </div>
+          <div class="itin-leg-day">
+            <div class="ild-dow">Sat</div>
+            <div class="ild-num">22</div>
+          </div>
+          <div class="itin-leg-body">
+            <div class="ilb-route">Lake City → Naples, FL</div>
+            <div class="ilb-addr">3310 Grand Cypress Dr, Naples, FL 34119</div>
+            <div class="ilb-note">Departure day — drive south</div>
+          </div>
+        </div>
+        <!-- Leg 2 -->
+        <div class="itin-leg">
+          <div class="itin-dot-col">
+            <div class="itin-dot"></div>
+          </div>
+          <div class="itin-leg-day">
+            <div class="ild-dow">Sun</div>
+            <div class="ild-num">24</div>
+          </div>
+          <div class="itin-leg-body">
+            <div class="ilb-route">Naples → Cape Coral Airbnb</div>
+            <div class="ilb-addr">4006 SW 25th Pl, Cape Coral, FL 33914</div>
+            <div class="ilb-note">Check-in at 5:00 pm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- trip strip (hidden — progress shown in profiles) -->
+    <div class="trip-strip" id="tripStrip" style="display:none">
+      <div class="ts-row">
+        <span class="ts-title" id="tripStripName">packd</span>
+        <span class="ts-pct" id="tripStripPct">0%</span>
+      </div>
+      <div class="ts-bar"><div class="ts-fill" id="tripStripBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- shared stream -->
+    <div class="shared-stream">
+      <p class="home-section-label">sharing with the group</p>
+      <div class="stream-card" id="sharedStream">
+        <div style="padding:28px 16px;text-align:center">
+          <div style="font-size:24px;opacity:.2;margin-bottom:8px">◎</div>
+          <div style="font-size:12px;color:var(--t4);font-style:italic">no shared items yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- profiles -->
+    <p class="home-section-label">select your profile</p>
+    <div class="profiles-grid" id="profilesGrid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 2: PIN ENTRY
+══════════════════════════════════ -->
+<div class="screen" id="screen-pin">
+  <div class="pin-wrap">
+    <div class="pin-avatar" id="pinAvatar"></div>
+    <div class="pin-name" id="pinName"></div>
+    <div class="pin-label" id="pinLabel">enter pin</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err" id="pinErr"></div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('del')" style="font-family:'Jost',sans-serif;font-size:14px">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('enter')" style="font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.06em">enter</button>
+    </div>
+    <button class="pin-back-btn" onclick="goHome()">← back</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 3: SETUP NEW PERSON
+══════════════════════════════════ -->
+<div class="screen" id="screen-setup">
+  <div class="setup-wrap">
+    <div class="setup-hero">
+      <h2 class="setup-title">create profile</h2>
+      <p class="setup-sub">tell us about yourself</p>
+    </div>
+
+    <div class="setup-avatar-row">
+      <div class="setup-avatar" id="setupAvatarDisplay" onclick="document.getElementById('avatarFileInput').click()">
+        <span style="font-size:28px;color:var(--t4)">+</span>
+        <span class="setup-avatar-hint">photo</span>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+      </div>
+    </div>
+
+    <div class="setup-field">
+      <label class="setup-label">Your Name</label>
+      <input class="setup-input" id="su-name" placeholder="First name">
+    </div>
+    <div class="setup-field">
+      <label class="setup-label">Family</label>
+      <select class="setup-select" id="su-family">
+        <option value="rhoden">Rhoden</option>
+        <option value="douglas">Douglas</option>
+        <option value="palmer">Palmer</option>
+      </select>
+    </div>
+
+    <label class="setup-pin-label">Set a 4-digit PIN</label>
+    <p class="setup-pin-hint">Leave blank to skip — you can always add one later.</p>
+
+    <div class="pin-setup-row" id="pinSetupRow">
+      <div class="pin-setup-dot">·</div>
+      <div class="pin-setup-dot">·</div>
+      <div class="pin-setup-dot">·</div>
+      <div class="pin-setup-dot">·</div>
+    </div>
+    <div class="setup-numpad">
+      <button class="snk" onclick="setupPinKey('1')">1</button>
+      <button class="snk" onclick="setupPinKey('2')">2</button>
+      <button class="snk" onclick="setupPinKey('3')">3</button>
+      <button class="snk" onclick="setupPinKey('4')">4</button>
+      <button class="snk" onclick="setupPinKey('5')">5</button>
+      <button class="snk" onclick="setupPinKey('6')">6</button>
+      <button class="snk" onclick="setupPinKey('7')">7</button>
+      <button class="snk" onclick="setupPinKey('8')">8</button>
+      <button class="snk" onclick="setupPinKey('9')">9</button>
+      <button class="snk" onclick="setupPinKey('del')" style="font-family:'Jost',sans-serif;font-size:14px">⌫</button>
+      <button class="snk" onclick="setupPinKey('0')">0</button>
+      <button class="snk" onclick="setupPinKey('clear')" style="font-family:'Jost',sans-serif;font-size:11px">clear</button>
+    </div>
+
+    <button class="setup-btn" onclick="saveNewPerson()">create profile</button>
+    <span class="setup-skip" onclick="goHome()">cancel</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 4: PERSONAL LIST
+══════════════════════════════════ -->
+<div class="screen" id="screen-list">
+  <div class="list-wrap">
+    <div class="list-topbar">
+      <button class="back-btn" onclick="goHome()">
+        <span class="back-arrow">←</span> all profiles
+      </button>
+      <button class="i-btn" style="font-size:13px;color:var(--t3)" onclick="openSettings()">⚙</button>
+    </div>
+
+    <div class="list-header">
+      <div class="list-avatar" id="listAvatar"></div>
+      <div class="list-name" id="listName">Name</div>
+      <div class="list-family" id="listFamily">family</div>
+    </div>
+
+    <div class="list-progress-row">
+      <div class="lp-ring">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="20" fill="none" stroke="var(--bg3)" stroke-width="2.5"/>
+          <circle cx="24" cy="24" r="20" fill="none" stroke-width="2.5" stroke-linecap="round"
+            stroke-dasharray="125.7" stroke-dashoffset="125.7" id="listRingFill"
+            style="transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)"/>
+        </svg>
+        <div class="lp-pct" id="listRingPct">0%</div>
+      </div>
+      <div class="lp-bar-wrap">
+        <div class="lp-label" id="listProgressLabel">0 of 0 items packed</div>
+        <div class="lp-bar"><div class="lp-fill" id="listBarFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- personal items -->
+    <div class="list-section-lbl">my packing list</div>
+    <div class="items-card" id="listItemsCard">
+      <div class="cf-row hide" id="listCatFilter"></div>
+      <div id="listItemsEl"></div>
+    </div>
+    <div class="sec-qa" id="listQA">
+      <input class="sec-qa-in" id="listQAInput" placeholder="Quick add item…" onkeydown="if(event.key==='Enter')listQAAdd()">
+      <button class="sec-qa-btn" id="listQABtn" onclick="listQAAdd()">Add</button>
+    </div>
+
+    <!-- shared from me -->
+    <div class="list-section-lbl">sharing with group</div>
+    <div class="items-card" id="listSharedCard">
+      <div id="listSharedEl"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM MODAL (personal) -->
+<div class="overlay" id="itemModal" onclick="if(event.target===this)closeItemModal()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="itemModalTitle">add item</div>
+    <input type="hidden" id="im-eid">
+    <div class="field">
+      <label>Item</label>
+      <input class="finput" id="im-name" placeholder="What needs to be packed?">
+    </div>
+    <div class="r2">
+      <div class="field">
+        <label>Qty</label>
+        <input class="finput" id="im-qty" type="number" min="1" placeholder="1">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select class="fsel" id="im-cat">
+          <option value="">—</option>
+          <option>Clothing</option><option>Bathroom</option><option>Electronics</option>
+          <option>Food</option><option>Pool / Beach</option><option>Kids</option>
+          <option>Medical</option><option>Car Travel</option><option>Documents</option>
+          <option>Last Minute</option>
+        </select>
+      </div>
+    </div>
+    <div class="r2">
+      <div class="field">
+        <label>Priority</label>
+        <select class="fsel" id="im-pri">
+          <option value="">Normal</option>
+          <option value="med">Medium</option>
+          <option value="hi">High</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Timing</label>
+        <select class="fsel" id="im-time">
+          <option value="">—</option>
+          <option>Pack tonight</option>
+          <option>Before leaving</option>
+          <option>Morning of</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Note</label>
+      <input class="finput" id="im-note" placeholder="Any extra detail…">
+    </div>
+    <!-- photo -->
+    <div class="field">
+      <label>Photo</label>
+      <div class="photo-upload-box" id="photoBox" onclick="document.getElementById('itemPhotoInput').click()">
+        <span class="pu-icon">📷</span>
+        <span class="pu-label">tap to add photo</span>
+        <input type="file" id="itemPhotoInput" accept="image/*" style="display:none" onchange="handleItemPhoto(event)">
+      </div>
+    </div>
+    <!-- share toggle -->
+    <div class="share-toggle-row off" id="shareToggleRow" onclick="toggleShare()">
+      <div class="sth-left">
+        <span class="sth-icon">◎</span>
+        <div>
+          <div class="sth-label">Share with group</div>
+          <div class="sth-sub">Visible to all families on home screen</div>
+        </div>
+      </div>
+      <div class="sth-toggle" id="shareToggleSwitch">
+        <div class="sth-knob"></div>
+      </div>
+    </div>
+    <div class="mact">
+      <button class="mcancel" onclick="closeItemModal()">cancel</button>
+      <button class="msave" onclick="savePersonalItem()">save item</button>
+    </div>
+  </div>
+</div>
+
+<!-- DATE MODAL -->
+<div class="overlay" id="dateModal" onclick="if(event.target===this)closeDM()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">trip details</div>
+    <div class="field">
+      <label>Trip Name</label>
+      <input class="finput" id="d-name" placeholder="e.g. Beach Week 2025">
+    </div>
+    <div class="field">
+      <label>Departure</label>
+      <input class="finput" id="d-date" type="date">
+    </div>
+    <div class="mact">
+      <button class="mcancel" onclick="closeDM()">cancel</button>
+      <button class="msave" onclick="saveDM()">save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL (rename/repin/delete) -->
+<div class="overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">profile settings</div>
+    <div class="field">
+      <label>Display Name</label>
+      <input class="finput" id="set-name" placeholder="Your name">
+    </div>
+    <div class="field">
+      <label>Family</label>
+      <select class="fsel" id="set-family">
+        <option value="rhoden">Rhoden</option>
+        <option value="douglas">Douglas</option>
+        <option value="palmer">Palmer</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>New PIN (leave blank to keep current)</label>
+      <input class="finput" id="set-pin" type="password" maxlength="4" placeholder="4 digits or leave blank" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Profile Photo</label>
+      <div class="photo-upload-box" id="settingsPhotoBox" onclick="document.getElementById('settingsPhotoInput').click()" style="aspect-ratio:1;max-width:100px">
+        <span class="pu-icon">📷</span>
+        <input type="file" id="settingsPhotoInput" accept="image/*" style="display:none" onchange="handleSettingsPhoto(event)">
+      </div>
+    </div>
+    <div class="mact">
+      <button class="mcancel" onclick="closeSettings()">cancel</button>
+      <button class="msave" onclick="saveSettings()">save</button>
+    </div>
+    <button onclick="deleteProfile()" style="width:100%;padding:13px;border-radius:100px;background:rgba(176,91,91,.08);color:#9a5a5a;border:1px solid rgba(176,91,91,.15);font-size:13px;font-weight:500;margin-top:10px;cursor:pointer">delete profile</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+</div>
+
+<!-- BOTTOM BAR (list screen) -->
+<div class="bot" id="bot" style="display:none">
+  <div class="bot-inner">
+    <div class="bot-field">
+      <span class="bot-ico">+</span>
+      <input class="bot-in" id="botIn" placeholder="quick add…" onkeydown="if(event.key==='Enter')botAdd()">
+    </div>
+    <button class="bot-detail" onclick="openItemModal()" title="Detailed add">≡</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+const FAMILY_META = {
+  rhoden:{c:'#6b8faf',bg:'#edf2f7',mid:'rgba(107,143,175,.2)',label:'Rhoden'},
+  douglas:{c:'#8b7355',bg:'#f5ede2',mid:'rgba(139,115,85,.2)',label:'Douglas'},
+  palmer:{c:'#6b8c72',bg:'#edf3ee',mid:'rgba(107,140,114,.2)',label:'Palmer'}
+};
+const CIRC_SMALL = 75.4;
+const CIRC_MED   = 125.7;
+
+let S = {
+  trip:{name:'Naples & Cape Coral 2025',date:'2025-05-22'},
+  persons:[],
+};
+
+function load(){
+  try{const d=localStorage.getItem('packd4');if(d)S={...S,...JSON.parse(d)}}catch(e){}
+}
+function persist(){
+  try{localStorage.setItem('packd4',JSON.stringify(S))}catch(e){}
+}
+load();
+
+// active person
+let activePID = null;
+function activePerson(){return S.persons.find(p=>p.id===activePID)}
+
+// ══════════════════════════════
+// SCREEN ROUTING
+// ══════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.getElementById('bot').style.display = id==='list' ? 'flex' : 'none';
+  window.scrollTo(0,0);
+}
+function goHome(){activePID=null;showScreen('home');renderHome()}
+
+// ══════════════════════════════
+// HOME RENDER
+// ══════════════════════════════
+function renderHome(){
+  updateTripStrip();
+  renderSharedStream();
+  renderProfilesGrid();
+}
+
+function updateTripStrip(){
+  const{name}=S.trip;
+  if(document.getElementById('tripStripName'))document.getElementById('tripStripName').textContent=name;
+  const btn=document.getElementById('homeDateTxt');
+  if(!btn)return;
+  // Departure: Saturday May 22 2025
+  const depart=new Date('2025-05-22T00:00:00');
+  const now=new Date();now.setHours(0,0,0,0);
+  const d=Math.round((depart-now)/86400000);
+  if(d>1)btn.textContent=d+' days to go';
+  else if(d===1)btn.textContent='departing tomorrow!';
+  else if(d===0)btn.textContent='departing today! 🚗';
+  else btn.textContent='trip is live ✦';
+  // hardcode trip name display
+  const tn=document.getElementById('tripStripName');
+  if(tn)tn.textContent='Naples & Cape Coral 2025';
+  // overall pct
+  const allItems=S.persons.flatMap(p=>p.items||[]);
+  const tot=allItems.length,pk=allItems.filter(i=>i.done).length;
+  const pct=tot?Math.round(pk/tot*100):0;
+  document.getElementById('tripStripPct').textContent=pct+'%';
+  document.getElementById('tripStripBar').style.width=pct+'%';
+}
+
+function renderSharedStream(){
+  const shared=[];
+  S.persons.forEach(p=>(p.items||[]).forEach(it=>{
+    if(it.shared) shared.push({...it,ownerName:p.name,ownerFamily:p.family,ownerAvatar:p.avatar});
+  }));
+  const el=document.getElementById('sharedStream');
+  if(!shared.length){
+    el.innerHTML='<div style="padding:28px 16px;text-align:center"><div style="font-size:24px;opacity:.2;margin-bottom:8px">◎</div><div style="font-size:12px;color:var(--t4);font-style:italic">no shared items yet</div></div>';
+    return;
+  }
+  el.innerHTML=shared.map(it=>{
+    const fm=FAMILY_META[it.ownerFamily]||FAMILY_META.rhoden;
+    const initials=(it.ownerName||'?').charAt(0).toUpperCase();
+    const avatarHTML=it.ownerAvatar
+      ?`<img src="${it.ownerAvatar}" alt="">`
+      :`<span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:${fm.c}">${initials}</span>`;
+    const thumbHTML=it.photo
+      ?`<img src="${it.photo}" alt="">`
+      :`<span>○</span>`;
+    return`<div class="stream-item">
+      <div class="si-thumb" style="border-radius:8px">${thumbHTML}</div>
+      <div class="si-body">
+        <div class="si-name">${esc(it.name)}${it.qty>1?` ×${it.qty}`:''}</div>
+        <div class="si-who" style="display:flex;align-items:center;gap:5px">
+          <span style="width:14px;height:14px;border-radius:50%;background:${fm.bg};border:1px solid ${fm.mid};display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:${fm.c};flex-shrink:0">${avatarHTML}</span>
+          ${esc(it.ownerName)} · ${fm.label}
+        </div>
+      </div>
+      <div class="si-packed${it.done?' done':''}" onclick="toggleSharedFromHome('${it.id}','${activePID||''}')">
+        <svg class="si-chk" width="9" height="7" viewBox="0 0 9 7" fill="none">
+          <path d="M1 3.5l2.5 2.5 4.5-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderProfilesGrid(){
+  const grid=document.getElementById('profilesGrid');
+  let html=S.persons.map(p=>{
+    const fm=FAMILY_META[p.family]||FAMILY_META.rhoden;
+    const items=p.items||[];
+    const pk=items.filter(i=>i.done).length;
+    const tot=items.length;
+    const sharedCount=items.filter(i=>i.shared).length;
+    const initials=(p.name||'?').charAt(0).toUpperCase();
+    const avatarInner=p.avatar?`<img src="${p.avatar}" alt="">`:`${initials}`;
+    return`<div class="profile-card" style="--pacc:${fm.c};--pacc-bg:${fm.bg};--pacc-mid:${fm.mid}" onclick="selectProfile('${p.id}')">
+      ${p.pin?'<div class="p-lock">🔒</div>':''}
+      <div class="p-avatar" style="background:${fm.bg};color:${fm.c};border-color:${fm.mid}">${avatarInner}</div>
+      <div class="p-name">${esc(p.name)}</div>
+      <div class="p-family">${fm.label}</div>
+      <div class="p-count">${pk}/${tot} packed</div>
+      ${sharedCount?`<div class="p-shared-badge">${sharedCount} shared</div>`:''}
+    </div>`;
+  }).join('');
+  html+=`<div class="profile-card add-card" onclick="goSetup()">
+    <div class="add-card-icon">+</div>
+    <div class="add-card-label">add person</div>
+  </div>`;
+  grid.innerHTML=html;
+}
+
+// ══════════════════════════════
+// PROFILE SELECTION + PIN
+// ══════════════════════════════
+let pinBuffer='';
+let pinTargetPID=null;
+
+function selectProfile(pid){
+  const p=S.persons.find(x=>x.id===pid);
+  if(!p)return;
+  if(p.pin){
+    pinTargetPID=pid;
+    pinBuffer='';
+    renderPinDots();
+    document.getElementById('pinErr').textContent='';
+    // populate
+    const fm=FAMILY_META[p.family]||FAMILY_META.rhoden;
+    const pa=document.getElementById('pinAvatar');
+    pa.style.background=fm.bg;pa.style.borderColor=fm.mid;
+    pa.innerHTML=p.avatar?`<img src="${p.avatar}" alt="">`:`<span style="font-family:'Cormorant Garamond',serif;font-size:28px;color:${fm.c}">${(p.name||'?').charAt(0).toUpperCase()}</span>`;
+    document.getElementById('pinName').textContent=p.name;
+    document.getElementById('pinLabel').textContent='enter your pin';
+    showScreen('pin');
+  }else{
+    activePID=pid;
+    showScreen('list');
+    renderListScreen();
+  }
+}
+
+function pinKey(k){
+  const err=document.getElementById('pinErr');
+  if(k==='del'){pinBuffer=pinBuffer.slice(0,-1);renderPinDots();return}
+  if(k==='enter'){
+    const p=S.persons.find(x=>x.id===pinTargetPID);
+    if(!p)return;
+    if(pinBuffer===p.pin){
+      activePID=pinTargetPID;
+      showScreen('list');
+      renderListScreen();
+    }else{
+      err.textContent='incorrect pin';
+      pinBuffer='';renderPinDots();
+      setTimeout(()=>err.textContent='',1800);
+    }
+    return;
+  }
+  if(pinBuffer.length>=4)return;
+  pinBuffer+=k;
+  renderPinDots();
+  if(pinBuffer.length===4){
+    setTimeout(()=>pinKey('enter'),180);
+  }
+}
+
+function renderPinDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('filled',i<pinBuffer.length);
+  }
+}
+
+// ══════════════════════════════
+// SETUP NEW PERSON
+// ══════════════════════════════
+let setupPin='';
+let setupAvatarData='';
+
+function goSetup(){
+  setupPin='';setupAvatarData='';
+  document.getElementById('su-name').value='';
+  document.getElementById('su-family').value='rhoden';
+  document.getElementById('setupAvatarDisplay').innerHTML='<span style="font-size:28px;color:var(--t4)">+</span><span class="setup-avatar-hint">photo</span><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">';
+  updateSetupPinDots();
+  showScreen('setup');
+}
+
+function setupPinKey(k){
+  if(k==='clear'){setupPin='';updateSetupPinDots();return}
+  if(k==='del'){setupPin=setupPin.slice(0,-1);updateSetupPinDots();return}
+  if(setupPin.length>=4)return;
+  setupPin+=k;updateSetupPinDots();
+}
+function updateSetupPinDots(){
+  document.querySelectorAll('.pin-setup-dot').forEach((d,i)=>{
+    d.classList.toggle('set',i<setupPin.length);
+    d.textContent=i<setupPin.length?'●':'·';
+  });
+}
+
+function handleAvatarUpload(e){
+  const f=e.target.files[0];if(!f)return;
+  resizeImage(f,200,data=>{
+    setupAvatarData=data;
+    const disp=document.getElementById('setupAvatarDisplay');
+    disp.innerHTML=`<img src="${data}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">`;
+  });
+}
+
+function saveNewPerson(){
+  const name=document.getElementById('su-name').value.trim();
+  if(!name){document.getElementById('su-name').focus();return}
+  const family=document.getElementById('su-family').value;
+  const id=uid();
+  const person={
+    id,name,family,
+    pin:setupPin.length===4?setupPin:'',
+    avatar:setupAvatarData||'',
+    items:[],cats:{}
+  };
+  S.persons.push(person);persist();
+  activePID=id;
+  showScreen('list');
+  renderListScreen();
+  toast('welcome, '+name+' ✦');
+}
+
+// ══════════════════════════════
+// LIST SCREEN
+// ══════════════════════════════
+let listCatFilter='all';
+
+function renderListScreen(){
+  const p=activePerson();if(!p)return;
+  const fm=FAMILY_META[p.family]||FAMILY_META.rhoden;
+  // avatar
+  const la=document.getElementById('listAvatar');
+  la.style.background=fm.bg;la.style.borderColor=fm.mid;
+  la.innerHTML=p.avatar?`<img src="${p.avatar}" alt="">`:`<span style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:${fm.c}">${(p.name||'?').charAt(0).toUpperCase()}</span>`;
+  document.getElementById('listName').textContent=p.name;
+  document.getElementById('listFamily').textContent=fm.label+' family';
+  // ring color
+  document.getElementById('listRingFill').style.stroke=fm.c;
+  document.getElementById('listBarFill').style.background=fm.c;
+  // qa button
+  document.getElementById('listQABtn').style.background=fm.c;
+  renderListItems();
+  renderListShared();
+  updateListProgress();
+}
+
+function renderListItems(){
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  const nonShared=p.items;
+  const fm=FAMILY_META[p.family]||FAMILY_META.rhoden;
+  // cat filter
+  const cats=[...new Set(nonShared.map(i=>i.cat).filter(Boolean))];
+  const cfEl=document.getElementById('listCatFilter');
+  if(cats.length){
+    cfEl.classList.remove('hide');
+    cfEl.innerHTML=`<button class="cf-chip${listCatFilter==='all'?' on':''}" onclick="setListCat('all',this)">All</button>`
+      +cats.map(c=>`<button class="cf-chip${listCatFilter===c?' on':''}" onclick="setListCat('${esc(c)}',this)">${esc(c)}</button>`).join('');
+  }else cfEl.classList.add('hide');
+  // items list
+  const shown=listCatFilter==='all'?nonShared:nonShared.filter(i=>i.cat===listCatFilter);
+  const el=document.getElementById('listItemsEl');
+  if(!shown.length){
+    el.innerHTML='<div class="empty"><div class="empty-glyph">○</div><div class="empty-txt">nothing here yet</div></div>';
+    return;
+  }
+  el.innerHTML=shown.map(it=>personalItemHTML(it,fm)).join('');
+}
+
+function personalItemHTML(it,fm){
+  const tags=[];
+  if(it.qty>1)tags.push(`<span class="itag qty">×${it.qty}</span>`);
+  if(it.cat)tags.push(`<span class="itag cat">${esc(it.cat)}</span>`);
+  if(it.pri==='hi')tags.push(`<span class="itag pri-hi">high</span>`);
+  if(it.pri==='med')tags.push(`<span class="itag pri-md">medium</span>`);
+  if(it.timing)tags.push(`<span class="itag tm">${esc(it.timing)}</span>`);
+  if(it.shared)tags.push(`<span class="itag sh-tag">shared</span>`);
+  if(it.note)tags.push(`<span class="itag nt">${esc(it.note)}</span>`);
+  const safeId=it.id;
+  const thumbHTML=it.photo
+    ?`<div class="i-thumb" data-photo-id="${safeId}" onclick="openLightboxById('${safeId}',event)"><img src="${it.photo}" alt=""></div>`
+    :'';
+  return`<div class="item-row${it.done?' done':''}" data-id="${it.id}"
+    style="--acc:${fm.c};--acc-mid:${fm.mid}">
+    <div class="i-check" onclick="togglePersonalItem('${it.id}')">
+      <div class="i-box">
+        <svg class="i-check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    ${thumbHTML}
+    <div class="i-body" onclick="openItemModal('${it.id}')">
+      <div class="iname">${esc(it.name)}</div>
+      ${tags.length?`<div class="imeta">${tags.join('')}</div>`:''}
+    </div>
+    <div class="i-right">
+      <button class="i-btn${it.shared?' share-on':''}" onclick="quickToggleShare('${it.id}',event)" title="${it.shared?'unshare':'share with group'}">◎</button>
+      <button class="i-btn del" onclick="deletePersonalItem('${it.id}',event)">✕</button>
+    </div>
+  </div>`;
+}
+
+function renderListShared(){
+  const p=activePerson();if(!p)return;
+  const shared=(p.items||[]).filter(i=>i.shared);
+  const fm=FAMILY_META[p.family]||FAMILY_META.rhoden;
+  const el=document.getElementById('listSharedEl');
+  if(!shared.length){
+    el.innerHTML='<div class="empty"><div class="empty-glyph">◎</div><div class="empty-txt">mark items with ◎ to share them with the group</div></div>';
+    return;
+  }
+  el.innerHTML=shared.map(it=>personalItemHTML(it,fm)).join('');
+}
+
+function setListCat(c,btn){
+  listCatFilter=c;
+  document.querySelectorAll('#listCatFilter .cf-chip').forEach(x=>x.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  renderListItems();
+}
+
+function updateListProgress(){
+  const p=activePerson();if(!p)return;
+  const items=p.items||[];
+  const tot=items.length,pk=items.filter(i=>i.done).length;
+  const pct=tot?Math.round(pk/tot*100):0;
+  document.getElementById('listRingPct').textContent=pct+'%';
+  document.getElementById('listRingFill').style.strokeDashoffset=CIRC_MED-(CIRC_MED*pct/100);
+  document.getElementById('listBarFill').style.width=pct+'%';
+  document.getElementById('listProgressLabel').textContent=`${pk} of ${tot} items packed`;
+  if(pct===100&&tot>0)celebrate();
+}
+
+// ══════════════════════════════
+// ITEM ACTIONS
+// ══════════════════════════════
+function togglePersonalItem(id){
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  const it=p.items.find(i=>i.id===id);if(!it)return;
+  it.done=!it.done;persist();
+  renderListItems();renderListShared();updateListProgress();
+  if(it.done)toast('packed · '+it.name);
+}
+
+function quickToggleShare(id,e){
+  e&&e.stopPropagation();
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  const it=p.items.find(i=>i.id===id);if(!it)return;
+  it.shared=!it.shared;persist();
+  renderListItems();renderListShared();
+  toast(it.shared?'shared with group ◎':'removed from group');
+}
+
+function deletePersonalItem(id,e){
+  e&&e.stopPropagation();
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  const idx=p.items.findIndex(i=>i.id===id);if(idx<0)return;
+  const name=p.items[idx].name;
+  p.items.splice(idx,1);persist();
+  renderListItems();renderListShared();updateListProgress();
+  toast('removed "'+name+'"');
+}
+
+function toggleSharedFromHome(itemId){
+  // find which person owns this item
+  for(const p of S.persons){
+    const it=(p.items||[]).find(i=>i.id===itemId);
+    if(it){it.done=!it.done;persist();renderHome();return}
+  }
+}
+
+function listQAAdd(){
+  const inp=document.getElementById('listQAInput');
+  const name=inp.value.trim();if(!name)return;
+  addPersonalItem({name,qty:1});inp.value='';inp.focus();
+}
+
+function botAdd(){
+  const inp=document.getElementById('botIn');
+  const name=inp.value.trim();if(!name)return;
+  addPersonalItem({name,qty:1});inp.value='';
+}
+
+function addPersonalItem(d){
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  const it={id:uid(),name:d.name,qty:d.qty||1,cat:d.cat||'',pri:d.pri||'',timing:d.timing||'',note:d.note||'',photo:d.photo||'',shared:d.shared||false,done:false};
+  p.items.push(it);persist();
+  renderListItems();renderListShared();updateListProgress();
+  toast('added · '+it.name);
+}
+
+// ══════════════════════════════
+// ITEM MODAL
+// ══════════════════════════════
+let itemModalShared=false;
+let itemModalPhoto='';
+
+function openItemModal(id){
+  document.getElementById('im-eid').value=id||'';
+  itemModalShared=false;itemModalPhoto='';
+  if(id){
+    const p=activePerson();
+    if(p&&!Array.isArray(p.items))p.items=[];
+    const it=p&&p.items.find(i=>i.id===id);
+    if(it){
+      document.getElementById('im-name').value=it.name;
+      document.getElementById('im-qty').value=it.qty||'';
+      document.getElementById('im-cat').value=it.cat||'';
+      document.getElementById('im-pri').value=it.pri||'';
+      document.getElementById('im-time').value=it.timing||'';
+      document.getElementById('im-note').value=it.note||'';
+      itemModalShared=it.shared||false;
+      itemModalPhoto=it.photo||'';
+      document.getElementById('itemModalTitle').textContent='edit item';
+    }
+  }else{
+    ['im-name','im-qty','im-note'].forEach(x=>document.getElementById(x).value='');
+    ['im-cat','im-pri','im-time'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('itemModalTitle').textContent='add item';
+  }
+  updateShareToggleUI();
+  updatePhotoBoxUI();
+  document.getElementById('itemModal').classList.add('on');
+  setTimeout(()=>document.getElementById('im-name').focus(),320);
+}
+
+function closeItemModal(){document.getElementById('itemModal').classList.remove('on')}
+
+function updateShareToggleUI(){
+  const row=document.getElementById('shareToggleRow');
+  const sw=document.getElementById('shareToggleSwitch');
+  row.classList.toggle('off',!itemModalShared);
+  sw.classList.toggle('on',itemModalShared);
+}
+
+function toggleShare(){
+  itemModalShared=!itemModalShared;
+  updateShareToggleUI();
+}
+
+function handleItemPhoto(e){
+  const f=e.target.files[0];if(!f)return;
+  resizeImage(f,600,data=>{itemModalPhoto=data;updatePhotoBoxUI()});
+}
+
+function updatePhotoBoxUI(){
+  const box=document.getElementById('photoBox');
+  if(itemModalPhoto){
+    box.innerHTML=`<img src="${itemModalPhoto}" alt=""><div class="photo-remove" onclick="clearItemPhoto(event)">✕</div><input type="file" id="itemPhotoInput" accept="image/*" style="display:none" onchange="handleItemPhoto(event)">`;
+  }else{
+    box.innerHTML=`<span class="pu-icon">📷</span><span class="pu-label">tap to add photo</span><input type="file" id="itemPhotoInput" accept="image/*" style="display:none" onchange="handleItemPhoto(event)">`;
+  }
+}
+
+function clearItemPhoto(e){
+  e&&e.stopPropagation();
+  itemModalPhoto='';updatePhotoBoxUI();
+}
+
+function savePersonalItem(){
+  const name=document.getElementById('im-name').value.trim();
+  if(!name){document.getElementById('im-name').focus();return}
+  const eid=document.getElementById('im-eid').value;
+  const d={
+    name,
+    qty:parseInt(document.getElementById('im-qty').value)||1,
+    cat:document.getElementById('im-cat').value,
+    pri:document.getElementById('im-pri').value,
+    timing:document.getElementById('im-time').value,
+    note:document.getElementById('im-note').value.trim(),
+    photo:itemModalPhoto,
+    shared:itemModalShared
+  };
+  const p=activePerson();if(!p)return;
+  if(!Array.isArray(p.items))p.items=[];
+  if(eid){
+    const it=p.items.find(i=>i.id===eid);
+    if(it){Object.assign(it,d);persist();toast('updated · '+it.name);}
+  }else{
+    addPersonalItem(d);
+    closeItemModal();
+    return;
+  }
+  renderListItems();renderListShared();updateListProgress();
+  closeItemModal();
+}
+
+// ══════════════════════════════
+// SETTINGS
+// ══════════════════════════════
+function openSettings(){
+  const p=activePerson();if(!p)return;
+  document.getElementById('set-name').value=p.name;
+  document.getElementById('set-family').value=p.family;
+  document.getElementById('set-pin').value='';
+  const pb=document.getElementById('settingsPhotoBox');
+  if(p.avatar){
+    pb.innerHTML=`<img src="${p.avatar}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"><input type="file" id="settingsPhotoInput" accept="image/*" style="display:none" onchange="handleSettingsPhoto(event)">`;
+  }else{
+    pb.innerHTML=`<span class="pu-icon">📷</span><input type="file" id="settingsPhotoInput" accept="image/*" style="display:none" onchange="handleSettingsPhoto(event)">`;
+  }
+  document.getElementById('settingsModal').classList.add('on');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('on')}
+
+function handleSettingsPhoto(e){
+  const f=e.target.files[0];if(!f)return;
+  resizeImage(f,200,data=>{
+    const p=activePerson();if(!p)return;
+    p.avatar=data;persist();
+    const pb=document.getElementById('settingsPhotoBox');
+    pb.innerHTML=`<img src="${data}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"><input type="file" id="settingsPhotoInput" accept="image/*" style="display:none" onchange="handleSettingsPhoto(event)">`;
+    // update list screen avatar preview
+    const la=document.getElementById('listAvatar');
+    if(la)la.innerHTML=`<img src="${data}" alt="">`;
+  });
+}
+
+function saveSettings(){
+  const p=activePerson();if(!p)return;
+  const name=document.getElementById('set-name').value.trim();
+  if(!name)return;
+  p.name=name;
+  p.family=document.getElementById('set-family').value;
+  const newPin=document.getElementById('set-pin').value.replace(/\D/g,'').slice(0,4);
+  if(newPin.length===4)p.pin=newPin;
+  else if(newPin===''){}// keep existing
+  persist();
+  renderListScreen();
+  closeSettings();
+  toast('profile updated');
+}
+
+function deleteProfile(){
+  const p=activePerson();if(!p)return;
+  if(!confirm('Delete '+p.name+"'s profile and all items?"))return;
+  S.persons=S.persons.filter(x=>x.id!==activePID);
+  persist();goHome();
+  toast('profile deleted');
+}
+
+// ══════════════════════════════
+// DATE MODAL
+// ══════════════════════════════
+function openDateModal(){
+  document.getElementById('d-name').value=S.trip.name||'';
+  document.getElementById('d-date').value=S.trip.date||'';
+  document.getElementById('dateModal').classList.add('on');
+}
+function closeDM(){document.getElementById('dateModal').classList.remove('on')}
+function saveDM(){
+  S.trip.name=document.getElementById('d-name').value.trim()||'packd';
+  S.trip.date=document.getElementById('d-date').value;
+  persist();updateTripStrip();closeDM();
+}
+
+// ══════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════
+function openLightbox(src,e){
+  e&&e.stopPropagation();
+  document.getElementById('lightboxImg').src=src;
+  document.getElementById('lightbox').classList.add('on');
+}
+function openLightboxById(id,e){
+  e&&e.stopPropagation();
+  const p=activePerson();if(!p)return;
+  const it=(p.items||[]).find(i=>i.id===id);
+  if(it&&it.photo)openLightbox(it.photo,e);
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('on')}
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+let tT;
+function toast(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+function resizeImage(file,maxW,cb){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const scale=Math.min(1,maxW/img.width);
+      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',.82));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function celebrate(){
+  const cs=['#6b8faf','#8b7355','#6b8c72','#b07c5b','#9a8070'];
+  for(let i=0;i<40;i++)setTimeout(()=>{
+    const c=document.createElement('div');c.className='cf';
+    c.style.cssText=`left:${Math.random()*100}vw;top:-8px;background:${cs[i%5]};transform:rotate(${Math.random()*360}deg);animation-duration:${2.4+Math.random()*1.2}s`;
+    document.body.appendChild(c);setTimeout(()=>c.remove(),4e3);
+  },i*55);
+  toast('everything packed ✦');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeItemModal();closeDM();closeSettings();closeLightbox();
+    document.getElementById('dateModal').classList.remove('on');
+  }
+});
+
+// ── SEED DEFAULT PROFILES ──
+if(S.persons.length === 0){
+  [{name:'Kendall',family:'rhoden'},{name:'Elora',family:'douglas'},{name:'Jacqueline',family:'palmer'}]
+  .forEach(d=>{
+    S.persons.push({id:uid(),name:d.name,family:d.family,pin:'',avatar:'',items:[],cats:{}});
+  });
+  persist();
+}
+
+// init
+renderHome();
+setInterval(updateTripStrip,60000);
+</script>
+</body>
+</html>
