@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>packd</title>
@@ -499,14 +497,14 @@ input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:n
   <div class="home-wrap">
     <div class="home-hero">
       <h1 class="home-wordmark">packd</h1>
-      <p class="home-sub">vacation · 2025</p>
+      <p class="home-sub">vacation · 2026</p>
     </div>
 
     <!-- itinerary card -->
     <div class="home-date-row">
       <div class="itin-card">
         <div class="itin-header">
-          <span class="itin-trip-name">Naples &amp; Cape Coral ✦ 2025</span>
+          <span class="itin-trip-name">Naples &amp; Cape Coral ✦ 2026</span>
           <span class="itin-countdown"><span class="date-pip"></span><span id="homeDateTxt">loading…</span></span>
         </div>
         <!-- Leg 1 -->
@@ -516,7 +514,7 @@ input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:n
             <div class="itin-dot-line"></div>
           </div>
           <div class="itin-leg-day">
-            <div class="ild-dow">Sat</div>
+            <div class="ild-dow">Fri</div>
             <div class="ild-num">22</div>
           </div>
           <div class="itin-leg-body">
@@ -800,7 +798,7 @@ input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:n
     <div class="sheet-title">trip details</div>
     <div class="field">
       <label>Trip Name</label>
-      <input class="finput" id="d-name" placeholder="e.g. Beach Week 2025">
+      <input class="finput" id="d-name" placeholder="e.g. Beach Week 2026">
     </div>
     <div class="field">
       <label>Departure</label>
@@ -869,16 +867,6 @@ input,textarea,select{font-family:'Jost',sans-serif;color:var(--t1);background:n
 <div class="toast" id="toast"></div>
 
 <script>
-  
-const SUPABASE_URL = 'https://smxnwbxwjhnshkjylpoq.supabase.co'
-
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteG53Ynh3amhuc2hranlscG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEyNzIsImV4cCI6MjA5NDk0NzI3Mn0.mtVdI1klPPiiJ_lVTTWR7KhKI5HuDIYlrztBhrINUz0'
-
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-)
-  
 // ══════════════════════════════
 // STATE
 // ══════════════════════════════
@@ -891,49 +879,22 @@ const CIRC_SMALL = 75.4;
 const CIRC_MED   = 125.7;
 
 let S = {
-  trip:{name:'Naples & Cape Coral 2025',date:'2025-05-22'},
+  trip:{name:'Naples & Cape Coral 2026',date:'2026-05-22'},
   persons:[],
 };
 
-async function load(){
-  const { data, error } = await supabaseClient
-    .from('packd_state')
-    .select('data')
-    .eq('id','main')
-    .single();
-
-  if(data?.data){
-    S = {...S, ...data.data};
-  }
+function load(){
+  try{const d=localStorage.getItem('packd4');if(d)S={...S,...JSON.parse(d)}}catch(e){}
 }
-  
 function persist(){
- supabaseClient
-  .from('packd_state')
-  .upsert({
-    id: 'main',
-    data: S,
-    updated_at: new Date().toISOString()
-  });
-  
+  try{localStorage.setItem('packd4',JSON.stringify(S))}catch(e){}
 }
 load();
 
 // active person
 let activePID = null;
 function activePerson(){return S.persons.find(p=>p.id===activePID)}
-  
-supabaseClient
-  .channel('packd_state_changes')
-  .on(
-    'postgres_changes',
-    { event: '*', schema: 'public', table: 'packd_state' },
-    async () => {
-      await load();
-      renderHome();
-    }
-  )
-  .subscribe();
+
 // ══════════════════════════════
 // SCREEN ROUTING
 // ══════════════════════════════
@@ -959,8 +920,8 @@ function updateTripStrip(){
   if(document.getElementById('tripStripName'))document.getElementById('tripStripName').textContent=name;
   const btn=document.getElementById('homeDateTxt');
   if(!btn)return;
-  // Departure: Saturday May 22 2025
-  const depart=new Date('2025-05-22T00:00:00');
+  // Departure: Saturday May 22 2026
+  const depart=new Date('2026-05-22T00:00:00');
   const now=new Date();now.setHours(0,0,0,0);
   const d=Math.round((depart-now)/86400000);
   if(d>1)btn.textContent=d+' days to go';
@@ -969,7 +930,7 @@ function updateTripStrip(){
   else btn.textContent='trip is live ✦';
   // hardcode trip name display
   const tn=document.getElementById('tripStripName');
-  if(tn)tn.textContent='Naples & Cape Coral 2025';
+  if(tn)tn.textContent='Naples & Cape Coral 2026';
   // overall pct
   const allItems=S.persons.flatMap(p=>p.items||[]);
   const tot=allItems.length,pk=allItems.filter(i=>i.done).length;
